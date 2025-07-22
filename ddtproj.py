@@ -2,21 +2,51 @@ import tkinter as tk
 from tkinter import messagebox
 
 
+def login():
+   username = username_entry.get()
+   password = password_entry.get()
+   password__check = False
+
+
+   try:
+       with open("users.txt", "r") as file:
+           for line in file:
+               if line.strip() == f"{username},{password}":
+                   password_check = True
+                   break
+   except:
+       messagebox.showerror("Error")
+       return
+
+
+   if password_check:
+       messagebox.showinfo("Login Approved", "Approved!")
+   else:
+       messagebox.showerror("Login Denied")
+
+
 def savepassword():
- 
    username = register_username_entry.get()
    password = register_password_entry.get()
-  
+
+
+   if not username or not password:
+       messagebox.showerror("Error", "Username and password cannot be empty.")
+       return
+
+
    with open("users.txt", "a") as file:
        file.write(f"{username},{password}\n")
-  
+
+
    messagebox.showinfo("Saved", "User info saved!")
-   register_window.destroy()  
+   register_window.destroy()
 
 
 def register():
    global register_window, register_username_entry, register_password_entry
-  
+
+
    register_window = tk.Toplevel(root)
    register_window.title("Register")
    register_window.geometry("300x200")
@@ -27,8 +57,9 @@ def register():
 
 
    register_username_entry = tk.Entry(register_window)
-   register_password_entry = tk.Entry(register_window, show="*")  
-  
+   register_password_entry = tk.Entry(register_window, show="*")
+
+
    save_button = tk.Button(register_window, text="Register", command=savepassword)
 
 
@@ -37,6 +68,7 @@ def register():
    password_label.pack(pady=5)
    register_password_entry.pack(pady=5)
    save_button.pack(pady=10)
+
 
 
 root = tk.Tk()
@@ -52,7 +84,7 @@ username_entry = tk.Entry(root)
 password_entry = tk.Entry(root, show="*")
 
 
-login_button = tk.Button(root, text="Login", command=lambda: print("Login pressed"))
+login_button = tk.Button(root, text="Login", command=login)
 register_button = tk.Button(root, text="Register", command=register)
 
 
