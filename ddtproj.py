@@ -3,6 +3,8 @@ from tkinter import messagebox
 from PIL import ImageTk, Image
 
 
+
+
 def login_process():
    username = username_entry.get()
    password = password_entry.get()
@@ -70,49 +72,3 @@ def register():
    password_label.pack(pady=5)
    register_password_entry.pack(pady=5)
    save_button.pack(pady=10)
-
-
-
-
-def main_menu():
-   main_window = tk.Toplevel(root)
-   main_window.title("Register")
-   main_window.geometry("1600x1000")
-   main_window.configure(bg="black")
-
-
- 
-   green_photo = Image.open("/Users/samswallow/Desktop/greensquare.png")
-   resized_photo = green_photo.resize((1500, 900))
-   green_background = ImageTk.PhotoImage(resized_photo)
-   label = tk.Label(main_window, image=green_background, bg="black")
-   label.place(x = 20, y=20)
-   main_window.green_background = green_background
-
-
-root = tk.Tk()
-root.title("Login Window")
-root.geometry("300x200")
-
-
-username_label = tk.Label(root, text="Enter your username:")
-password_label = tk.Label(root, text="Enter your password:")
-
-
-username_entry = tk.Entry(root)
-password_entry = tk.Entry(root, show="*")
-
-
-login_button = tk.Button(root, text="Login", command=login_process)
-register_button = tk.Button(root, text="Register", command=register)
-
-
-username_label.pack(pady=5)
-username_entry.pack(pady=5)
-password_label.pack(pady=5)
-password_entry.pack(pady=5)
-login_button.pack(pady=5)
-register_button.pack(pady=5)
-
-
-root.mainloop()
