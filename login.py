@@ -4,6 +4,7 @@ import subprocess
 import sys
 import register 
 from tkinter import *
+import sqlite3
 
 def login(root, on_success):
     def check_credentials():
@@ -11,22 +12,24 @@ def login(root, on_success):
         password = password_entry.get()
         password_check = False
 
-        try:
-            with open("users.txt", "r") as file:
-                for line in file:
-                    if line.strip() == f"{username},{password}":
-                        password_check = True
-                        break
-        except Exception as e:
-            messagebox.showerror("Error", f"Could not read users.txt:\n{e}")
+        if not username or not password:
+            messagebox.showerror("Error", "Please enter both username and password.")
             return
 
-        if not (teacher_var.get() or student_var.get()):
-            messagebox.showerror("Error", "Please select Teacher or Student")
-            return
+        conn = sqlite3.connect("students.db")
+        cursor = conn.cursor()
+
+        
+        cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+           password_check = True
+        else:
+            messagebox.showerror("Error", "Invalid username or password.")
 
         if password_check:
-
             if teacher_var.get():
                 subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/teachermain.py"])
                 login_window.destroy()
@@ -48,7 +51,7 @@ def login(root, on_success):
 
     password_label = tk.Label(login_window, text="Enter your password:")
     password_label.pack(pady=5)
-    
+
     password_entry = tk.Entry(login_window, show="*")
     password_entry.pack(pady=5)
 
@@ -57,6 +60,7 @@ def login(root, on_success):
 
     teacher_option = tk.Checkbutton(login_window, text="Teacher", variable=teacher_var)
     teacher_option.pack(pady=5)
+
     student_option = tk.Checkbutton(login_window, text="Student", variable=student_var)
     student_option.pack(pady=5)
 

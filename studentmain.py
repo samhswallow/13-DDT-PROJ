@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import ImageTk, Image
 import socket
-from lockedbrowser import launch_browser
+from lockedbrowser copy import launch_browser
 from tkinter import ttk
 from datetime import datetime
 
