@@ -39,6 +39,8 @@ def login(root, on_success):
     login_button = tk.Button(login_window, text="Login", command=check_credentials)
     register_button = tk.Button(login_window, text="Register", command=lambda: register.register(root))
 
+    teacher_option = tk.Radiobutton(login_window, text ="teacher")
+
     username_label.pack(pady=5)
     username_entry.pack(pady=5)
     password_label.pack(pady=5)

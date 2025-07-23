@@ -2,9 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import ImageTk, Image
 import subprocess
-import login 
-
-
+import login
+ 
 url_list = []
 name_list = []
 
@@ -39,7 +38,6 @@ def create_tab():
 
     save_tab_button = tk.Button(create_tab_window, text="Save", command=save_tab, font=("Arial", 14))
 
-
     create_tab_label.pack(pady=(10, 0))
     create_tab_entry.pack(pady=(0, 10))
     create_tab_label_name.pack(pady=(10, 0))
@@ -63,6 +61,7 @@ def main_menu():
     create_link.place(x=700, y=850)
 
     main_window.green_background = green_background  
+
 
 root = tk.Tk()
 root.withdraw()  
