@@ -4,6 +4,8 @@ from PyQt5.QtCore import QUrl
 import sys
 
 
+
+
 global url
 
 
