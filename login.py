@@ -3,6 +3,7 @@ from tkinter import messagebox
 import subprocess
 import sys
 import register 
+from tkinter import *
 
 def login(root, on_success):
     def check_credentials():
@@ -27,11 +28,11 @@ def login(root, on_success):
         if password_check:
 
             if teacher_var.get():
-            
-               subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/teachermain.py"])
+                subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/teachermain.py"])
+                login_window.destroy()
             else:
-               
                 subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/studentmain.py"])
+                login_window.destroy()
         else:
             messagebox.showerror("Login Denied", "Incorrect username or password")
 

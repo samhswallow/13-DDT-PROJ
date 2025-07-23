@@ -2,10 +2,27 @@ import tkinter as tk
 from tkinter import messagebox
 from PIL import ImageTk, Image
 import login  
+import socket
+import threading
 
 
 url_list = []
 name_list = []
+
+def server():
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(("10.17.1.39", 6060))  # use your stable local IP
+        s.listen(1)
+        print("Server listening on 10.17.1.246:6060...")
+
+        while True:
+            clientSocket, address = s.accept()
+            print(f"Connection established from {address}")
+
+            clientSocket.send("amogusbobby".encode("utf-8"))
+            clientSocket.close()
+
+ 
 
 def create_tab():
     create_tab_window = tk.Toplevel(main_window)
@@ -65,8 +82,14 @@ def teacher_menu():
     except Exception as e:
         messagebox.showerror("Image Error", f"Could not load image:\n{e}")
 
+    establish_connection = tk.Button(main_window, text="Establish Connection", command=server, font=("Arial", 16))
+    establish_connection.place(x = 700, y = 700)
+
     create_link = tk.Button(main_window, text="Create Link", command=create_tab, font=("Arial", 16))
     create_link.place(x=700, y=850)
+
+
+
 
     main_window.mainloop()
 

@@ -19,4 +19,3 @@ def launch_browser(url):
     app = QApplication(sys.argv)
     window = LockedBrowser(url)
     sys.exit(app.exec_())
-
