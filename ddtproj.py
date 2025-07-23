@@ -1,13 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox
 from PIL import ImageTk, Image
-from lockedbrowser import launch_browser
 import subprocess
 
 
 url_list = []
 name_list = []
-
 
 
 def login_process():
@@ -36,7 +34,6 @@ def login_process():
 
 
 
-
 def save_password():
    username = register_username_entry.get()
    password = register_password_entry.get()
@@ -53,7 +50,6 @@ def save_password():
 
    messagebox.showinfo("Saved", "User info saved!")
    register_window.destroy()
-
 
 
 def register():
@@ -82,12 +78,10 @@ def register():
    register_password_entry.pack(pady=5)
    save_button.pack(pady=10)
   
-
-
 def create_tab():
    create_tab_window = tk.Toplevel(root)
    create_tab_window.title("Create Tab")
-   create_tab_window.geometry("300x200")
+   create_tab_window.geometry("300x250")
 
 
    create_tab_label = tk.Label(create_tab_window, text="Enter URL")
@@ -98,32 +92,39 @@ def create_tab():
    create_tab_label_entry = tk.Entry(create_tab_window)
 
 
+   create_tab_label.pack(pady=(10, 0))
+   create_tab_entry.pack(pady=(0, 10))
+   create_tab_label_name.pack(pady=(10, 0))
+   create_tab_label_entry.pack(pady=(0, 10))
+
+
    def save_tab():
+       global url
        url = create_tab_entry.get()
        name = create_tab_label_entry.get()
+
+
        if url and name:
-           url_list.append((url))
-           name_list.append((name))
-           messagebox.showinfo("Success", "Name and URL saved")
-           create_tab_window.destroy()
+           url_list.append(url)
+           name_list.append(name)
+           messagebox.showinfo("Success", f"Saved tab '{name}'")
+
+
+           def open_tab():
+               from lockedbrowser import launch_browser
+               launch_browser(url)
+
+
+           authorised_link_button = tk.Button(main_window, text=name, command=open_tab, font=("Arial", 14))
+           authorised_link_button.pack(pady=10)
        else:
-             messagebox.showerror("Error", "Both fields are required")
+           messagebox.showerror("Error", "Both fields are required")
 
 
-       url = url_list.copy
-       new_name = name_list.copy
+   save_tab_button = tk.Button(create_tab_window, text="Save", command=save_tab, font=("Arial", 14))
+   save_tab_button.pack(pady=10)
 
 
-       def open_tab():
-           launch_browser(url)
-
-
-       authorised_link_button = tk.Button(create_tab_window, text=f"{new_name}", command=open_tab, font=("Arial", 16))
-
-
-
-
-   save_tab_button = tk.Button(create_tab_window, text="Save", command=save_tab, font=("Arial", 16))
 
 
 
@@ -134,11 +135,11 @@ def create_tab():
    create_tab_label_name.pack(pady=(10, 0))
    create_tab_label_entry.pack(pady=(0, 10))
    save_tab_button.pack()
-   authorised_link_button.pack()
-
+  
 
 
 def main_menu():
+   global main_window
    main_window = tk.Toplevel(root)
    main_window.title("Register")
    main_window.geometry("1600x1000")

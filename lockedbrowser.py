@@ -6,7 +6,6 @@ import sys
 
 
 
-global url
 
 
 def launch_browser(url):
@@ -16,7 +15,6 @@ def launch_browser(url):
            self.setWindowTitle("Locked Browser")
            self.browser = QWebEngineView()
            self.browser.setUrl(QUrl(url))
-           self.browser.setContextMenuPolicy(0)
            self.browser.page().setDevToolsPage(None)
            self.setCentralWidget(self.browser)
            self.showFullScreen()
@@ -25,4 +23,5 @@ def launch_browser(url):
    app = QApplication(sys.argv)
    window = LockedBrowser(url)
    sys.exit(app.exec_())
+
 
