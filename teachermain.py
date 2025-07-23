@@ -62,7 +62,6 @@ def main_menu():
 
     main_window.green_background = green_background  
 
-
 root = tk.Tk()
 root.withdraw()  
 login.login(root, main_menu)
