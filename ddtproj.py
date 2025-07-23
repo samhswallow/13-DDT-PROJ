@@ -9,6 +9,7 @@ url_list = []
 name_list = []
 
 
+
 def login_process():
    username = username_entry.get()
    password = password_entry.get()
@@ -35,6 +36,7 @@ def login_process():
 
 
 
+
 def save_password():
    username = register_username_entry.get()
    password = register_password_entry.get()
@@ -51,6 +53,7 @@ def save_password():
 
    messagebox.showinfo("Saved", "User info saved!")
    register_window.destroy()
+
 
 
 def register():
@@ -93,6 +96,31 @@ def create_tab():
 
    create_tab_label_name = tk.Label(create_tab_window, text="Enter URL's name")
    create_tab_label_entry = tk.Entry(create_tab_window)
+
+
+   def save_tab():
+       url = create_tab_entry.get()
+       name = create_tab_label_entry.get()
+       if url and name:
+           url_list.append((url))
+           name_list.append((name))
+           messagebox.showinfo("Success", "Name and URL saved")
+           create_tab_window.destroy()
+       else:
+             messagebox.showerror("Error", "Both fields are required")
+
+
+       url = url_list.copy
+       new_name = name_list.copy
+
+
+       def open_tab():
+           launch_browser(url)
+
+
+       authorised_link_button = tk.Button(create_tab_window, text=f"{new_name}", command=open_tab, font=("Arial", 16))
+
+
 
 
    save_tab_button = tk.Button(create_tab_window, text="Save", command=save_tab, font=("Arial", 16))
