@@ -25,6 +25,18 @@ def register(root):
     username_entry = tk.Entry(register_window)
     username_entry.pack(pady=5)
 
+    tk.Label(register_window, text="Enter your name:").pack(pady=5)
+    name_entry = tk.Entry(register_window)
+    name_entry.pack(pady=5)
+
+    tk.Label(register_window, text="Enter your surname:").pack(pady=5)
+    surnamename_entry = tk.Entry(register_window)
+    surnamename_entry.pack(pady=5)
+
+    tk.Label(register_window, text="Enter your Form Class:").pack(pady=5)
+    formclass_entry = tk.Entry(register_window)
+    formclass_entry.pack(pady=5)
+
     tk.Label(register_window, text="Enter your password:").pack(pady=5)
     password_entry = tk.Entry(register_window, show="*")
     password_entry.pack(pady=5)

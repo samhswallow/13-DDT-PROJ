@@ -3,6 +3,8 @@ from tkinter import messagebox
 from PIL import ImageTk, Image
 import socket
 from lockedbrowser import launch_browser
+from tkinter import ttk
+from datetime import datetime
 
 global url
 url = None
@@ -53,23 +55,35 @@ def student_menu():
     student_window.geometry("1600x1000")
     student_window.configure(bg="black")
 
-    content_frame = tk.Frame(student_window, bg="black")
-    content_frame.pack(fill="both", expand=True)
+   
+    header_frame = tk.Frame(student_window, bg="green", height=60)
+    header_frame.pack(fill="x")
 
-    try:
-        green_photo = Image.open("/Users/samswallow/Desktop/13_ddt_proj/the files/greensquare.png")
-        resized_photo = green_photo.resize((1500, 800)) 
-        green_background = ImageTk.PhotoImage(resized_photo)
+    greeting_label = tk.Label(header_frame, text="", bg="green", fg="white", font=("Arial", 30))
+    greeting_label.pack(side="left", padx=10)
 
-        image_label = tk.Label(content_frame, image=green_background, bg="black")
-        image_label.image = green_background
-        image_label.pack(fill="both", expand=True)
-    except Exception as e:
-        messagebox.showerror("Image Error", f"Could not load background image:\n{e}")
+    time_label = tk.Label(header_frame, text="", bg="green", fg="white", font=("Arial", 30))
+    time_label.pack(side="right", padx=10)
 
-    button_frame = tk.Frame(student_window, bg="black")
-    button_frame.pack(fill="x", pady=10)
+    def update_clock():
+        now = datetime.now()
+        hour = now.hour
+        timestamp = now.strftime(" %H:%M:%S")  
 
+       
+        if 5 <= hour < 12:
+            greeting = "Good Morning"
+        elif 12 <= hour < 17:
+            greeting = "Good Afternoon"
+        else:
+            greeting = "Good Evening"
+
+        greeting_label.config(text=greeting)
+        time_label.config(text=timestamp)
+
+        student_window.after(100, update_clock)  
+
+    update_clock()
     establish_connection_button = tk.Button(
         button_frame,
         text="Establish Connection",

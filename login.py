@@ -42,11 +42,13 @@ def login(root, on_success):
 
     username_label = tk.Label(login_window, text="Enter your username:")
     username_label.pack(pady=5)
+
     username_entry = tk.Entry(login_window)
     username_entry.pack(pady=5)
 
     password_label = tk.Label(login_window, text="Enter your password:")
     password_label.pack(pady=5)
+    
     password_entry = tk.Entry(login_window, show="*")
     password_entry.pack(pady=5)
 

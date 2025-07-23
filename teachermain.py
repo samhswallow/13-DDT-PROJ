@@ -3,6 +3,8 @@ from tkinter import messagebox
 from PIL import ImageTk, Image
 import socket
 import threading
+from tkinter import ttk
+from datetime import datetime
 
 
 current_url = None
@@ -80,41 +82,45 @@ def teacher_menu():
     main_window.geometry("1600x1000")
     main_window.configure(bg="black")
 
-    
-    main_window.rowconfigure(0, weight=1)
-    main_window.rowconfigure(1, weight=0)
-    main_window.columnconfigure(0, weight=1)
+    header_frame = tk.Frame(main_window, bg="#2c3e50", height=60)
+    header_frame.pack(fill="x")
 
-    content_frame = tk.Frame(main_window, bg="black")
-    content_frame.grid(row=0, column=0, sticky="nsew")
-    content_frame.rowconfigure(0, weight=1)
-    content_frame.columnconfigure(0, weight=1)
+    greeting_label = tk.Label(header_frame, text="", bg="#2c3e50", fg="white", font=("Arial", 30))
+    greeting_label.pack(side="left", padx=10)
 
-    try:
-        green_photo = Image.open("/Users/samswallow/Desktop/13_ddt_proj/the files/greensquare.png")
-        resized_photo = green_photo.resize((1500, 900))
-        green_background = ImageTk.PhotoImage(resized_photo)
-        background_label = tk.Label(content_frame, image=green_background, bg="black")
-        background_label.image = green_background 
-        background_label.grid(row=0, column=0, sticky="nsew")
-        main_window.green_background = green_background
-    except Exception as e:
-        messagebox.showerror("Image Error", f"Could not load image:\n{e}")
+    time_label = tk.Label(header_frame, text="", bg="#2c3e50", fg="white", font=("Arial", 30))
+    time_label.pack(side="right", padx=10)
 
-  
-    button_frame = tk.Frame(main_window, bg="black")
-    button_frame.grid(row=1, column=0, pady=20)
+    def update_clock():
+        now = datetime.now()
+        hour = now.hour
+        timestamp = now.strftime(" %H:%M:%S")  
+
+       
+        if 5 <= hour < 12:
+            greeting = "Good Morning"
+        elif 12 <= hour < 17:
+            greeting = "Good Afternoon"
+        else:
+            greeting = "Good Evening"
+
+        greeting_label.config(text=greeting)
+        time_label.config(text=timestamp)
+
+        main_window.after(100, update_clock)  
+
+    update_clock()  
 
     connect_button = tk.Button(
-        button_frame,
+        main_window,
         text="Start Connection",
         command=begin_data,
         font=("Arial", 16)
     )
     connect_button.pack(pady=10)
 
-    
     threading.Thread(target=server, daemon=True).start()
+
 
 
 if __name__ == "__main__":
