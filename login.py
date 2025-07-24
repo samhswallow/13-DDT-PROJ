@@ -27,6 +27,7 @@ def check_credentials():
         messagebox.showerror("Error", "Please fill in username and password.")
         return
 
+    
     login_data = f"LOGIN,{username},{password},{temp_ip}"
 
     try:
@@ -40,6 +41,7 @@ def check_credentials():
             response = client_socket.recv(1024).decode('utf-8')
             if response.startswith("SUCCESS"):
                 messagebox.showinfo("Login Success", response)
+                
                 subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/studentmain.py"])
             else:
                 messagebox.showerror("Login Failed", response)

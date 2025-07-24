@@ -40,7 +40,7 @@ def save_to_database(data):
 
 def login_protocol(data):
     global login_value
-    login_value = False 
+    login_value = False
     parts = data.split(",")
     username = parts[1]
     password = parts[2]
@@ -57,7 +57,7 @@ def login_protocol(data):
     if user:
         login_value = True
         print("Login successful for user:", username)
-        
+
         cursor.execute("""
             UPDATE users SET online_status = 0 WHERE username = ?
         """, (username,))
@@ -88,9 +88,9 @@ def register_online(ip):
 def run_server():
     create_database()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("127.0.0.1", 6060))
+    s.bind(("10.17.1.39", 6060))
     s.listen(5)
-    print("[*] Server is listening on 127.0.0.1:6060")
+    print("[*] Server is listening on 10.17.1.39:6060")
 
     while True:
         client_socket, addr = s.accept()
@@ -100,7 +100,6 @@ def run_server():
 
         if data.startswith("LOGIN"):
             login_protocol(data)
-
             if login_value:
                 client_socket.sendall("SUCCESS Login successful!".encode())
             else:
@@ -110,6 +109,40 @@ def run_server():
             ip = data.split(",")[1]
             register_online(ip)
             client_socket.sendall(f"IP {ip} registered as online.".encode())
+
+        elif data.startswith("CONNECT"):
+            parts = data.split(",", 2)
+            if len(parts) == 3:
+                command = parts[0]
+                username = parts[1].strip()
+                saved_link = parts[2].strip()
+
+                conn = sqlite3.connect("students.db")
+                cursor = conn.cursor()
+
+                cursor.execute("SELECT ip FROM users WHERE username = ?", (username,))
+                result = cursor.fetchone()
+                conn.close()
+
+                if result:
+                    target_ip = result[0]
+                    print(f"[+] Found user '{username}' with IP {target_ip}. Sending saved link...")
+
+                    try:
+                        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as send_sock:
+                            send_sock.connect((target_ip, 6060))  
+                            send_sock.sendall(saved_link.encode())
+                        client_socket.sendall(f"Link sent to {username}.".encode())
+                        print(f"[+] Link sent to {username}")
+                    except Exception as e:
+                        client_socket.sendall(f"Failed to send link to {username}: {e}".encode())
+                        print(f"[!] Failed to send link to {username}: {e}")
+                else:
+                    client_socket.sendall(f"User '{username}' not found.".encode())
+                    print(f"[!] User '{username}' not found.")
+            else:
+                client_socket.sendall("Invalid CONNECT command format.".encode())
+                print("[!] Invalid CONNECT command format")
 
         elif data == "SCAN_NETWORK":
             conn = sqlite3.connect("students.db")

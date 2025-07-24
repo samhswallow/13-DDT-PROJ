@@ -2,11 +2,23 @@ import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 import socket
+import threading
 from lockedbrowser import launch_browser
 
 url = None  
-local_ip = None  
+local_ip = None 
 
+def get_local_ip():
+    global local_ip
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("10.255.255.255", 1))
+        local_ip = s.getsockname()[0]
+        s.close()
+        return local_ip
+    except Exception:
+        local_ip = "127.0.0.1"
+        return local_ip
 
 def send_ip():
     global local_ip
@@ -22,28 +34,32 @@ def send_ip():
     except Exception as e:
         return f"Error: {e}"
 
-
-def get_local_ip():
-    global local_ip
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("10.255.255.255", 1))
-        local_ip = s.getsockname()[0]
-        s.close()
-        if local_ip:
-            send_ip()
-        return local_ip
-    except Exception:
-        local_ip = "127.0.0.1"
-        return local_ip
-
-
 def create_tab():
     if url:
         launch_browser(url)
     else:
         messagebox.showerror("Error", "No URL to launch.")
 
+def server_thread():
+    global local_ip
+    local_ip = get_local_ip()
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((local_ip, 6060))
+    server_socket.listen(5)
+    print(f"[*] Listening on {local_ip}:6060...")
+
+    while True:
+        client, addr = server_socket.accept()
+        print(f"[+] Connection received from {addr}")
+        data = client.recv(2048).decode("utf-8")
+        print(f"[+] Data received: {data}")
+        client.sendall("Link received successfully.".encode())
+        client.close()
+        global url
+        url = data
+
+def start_server():
+    threading.Thread(target=server_thread, daemon=True).start()
 
 def student_client(button_frame):
     global url, local_ip
@@ -59,7 +75,7 @@ def student_client(button_frame):
         url_received = s.recv(2048).decode("utf-8")
         print(f"Message received: {url_received}")
 
-        url = url_received   
+        url = url_received  
 
         authorised_link_button = tk.Button(
             button_frame,
@@ -83,8 +99,13 @@ def student_client(button_frame):
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {e}")
 
+def log_online():
+    response = send_ip()
+    messagebox.showinfo("Server Response", response)
 
 def student_menu():
+     
+
     student_window = tk.Tk()
     student_window.title("Student Menu")
     student_window.geometry("1600x1000")
@@ -114,7 +135,7 @@ def student_menu():
         greeting_label.config(text=greeting)
         time_label.config(text=timestamp)
 
-        student_window.after(1000, update_clock)  
+        student_window.after(1000, update_clock)
 
     update_clock()
 
@@ -133,20 +154,29 @@ def student_menu():
     establish_connection_button.pack(pady=10)
 
     log_online_button = tk.Button(
-    button_frame,
-    text="Log Online",
-    command=get_local_ip,  
-    font=("Arial", 16),
-    bg="blue",
-    fg="white",
-    highlightbackground="blue",  
-    width=20
-)
+        button_frame,
+        text="Log Online",
+        command=log_online,
+        font=("Arial", 16),
+        bg="blue",
+        fg="white",
+        width=20
+    )
     log_online_button.pack(pady=10)
 
+    recieve_data_button = tk.Button(
+            button_frame,
+            text="Start Connection",
+            command=start_server,
+            font=("Arial", 14),
+            bg="green",
+            fg="black",
+            width=15
+        )
+    
+    recieve_data_button.pack(pady=10)
 
     student_window.mainloop()
-
 
 if __name__ == "__main__":
     student_menu()

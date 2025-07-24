@@ -12,7 +12,7 @@ def launch_browser(url):
             self.setWindowTitle("Locked Browser")
             self.browser = QWebEngineView()
             self.browser.setUrl(QUrl(url))
-            self.browser.page().setDevToolsPage(None)  # Disable dev tools
+            self.browser.page().setDevToolsPage(None)  
             self.setCentralWidget(self.browser)
             self.showFullScreen()
 

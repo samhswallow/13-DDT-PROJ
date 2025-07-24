@@ -36,6 +36,7 @@ def save_password():
 
     ip = get_local_ip()
 
+   
     user_data = f"{username},{name},{surname},{formclass},{password},{ip}"
     send_to_server()
 
