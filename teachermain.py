@@ -5,6 +5,14 @@ import socket
 import threading
 from tkinter import ttk
 from datetime import datetime
+import scan
+import os 
+import subprocess
+import sys 
+
+def run_program():
+    subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/scan.py"])
+
 
 
 current_url = None
@@ -49,29 +57,19 @@ def begin_data():
     create_tab_label_entry.pack(pady=(0, 10))
     save_tab_button.pack(pady=10)
 
-
-def server():
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
+def teacher_client():
+   
     try:
-        s.bind(("172.20.10.2", 6060))  
-    except OSError as e:
-        print(f"Could not bind socket: {e}")
-        return
-
-    s.listen(1)
-    print("Server listening on 172.20.10.2:6060...")
-
-    while True:
-        clientSocket, address = s.accept()
-        print(f"Connection established from {address}")
-        if current_url:
-            message = current_url
-            clientSocket.sendall(message.encode())  
-        else:
-            clientSocket.send("No URL provided.".encode("utf-8"))
-        clientSocket.close()
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(("127.0.0.1", 6060))  
+       
+    except ConnectionRefusedError:
+        messagebox.showerror(
+            "Connection Error",
+            "No server running on this IP and port.\nPlease start the server first."
+        )
+    except Exception as e:
+        messagebox.showerror("Error", f"An error occurred: {e}")
 
 
 
@@ -119,7 +117,13 @@ def teacher_menu():
     )
     connect_button.pack(pady=10)
 
-    threading.Thread(target=server, daemon=True).start()
+    scan_students_button = tk.Button(
+        main_window,
+        text="Scan for Students!",
+        command= run_program,
+        font=("Arial", 16)
+    )
+    scan_students_button.pack(pady=10)
 
 
 

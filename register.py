@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import messagebox
-import sqlite3
 import socket
 
 def get_local_ip():
@@ -13,7 +12,18 @@ def get_local_ip():
     except Exception as e:
         return f"Error getting IP: {e}"
 
+def send_to_server():
+    try:
+        server_ip = "127.0.0.1"  
+        server_port = 6060
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            client_socket.connect((server_ip, server_port))
+            client_socket.sendall(user_data.encode('utf-8'))
+    except Exception as e:
+        messagebox.showerror("Network Error", f"Could not send data to server: {e}")
+
 def save_password():
+    global user_data
     username = username_entry.get()
     password = password_entry.get()
     surname = surname_entry.get()
@@ -24,45 +34,13 @@ def save_password():
         messagebox.showerror("Error", "You did not fill all inputs.")
         return
 
-    
     ip = get_local_ip()
-    print("Local IP Address:", ip)
 
-   
-    try:
-        global conn
-        conn = sqlite3.connect("students.db")
-        cursor = conn.cursor()
+    user_data = f"{username},{name},{surname},{formclass},{password},{ip}"
+    send_to_server()
 
-        cursor.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        name TEXT,
-        surname TEXT,
-        form_class TEXT,
-        password TEXT,
-        ip TEXT
-    )
-""")
-
-        cursor.execute("""
-            INSERT INTO users (username, name, surname, form_class, password, ip)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (username, name, surname, formclass, password, ip))
-        conn.commit()
-
-        messagebox.showinfo("Success", "Registration successful!")
-        register_window.destroy()
-
-    except sqlite3.IntegrityError:
-        messagebox.showerror("Error", "Username already exists.")
-
-    except Exception as e:
-        messagebox.showerror("Database Error", str(e))
-
-    finally:
-        conn.close()
+    messagebox.showinfo("Success", "Registration sent to server!")
+    register_window.destroy()
 
 def register(root):
     global username_entry, password_entry, surname_entry, formclass_entry, name_entry, register_window
