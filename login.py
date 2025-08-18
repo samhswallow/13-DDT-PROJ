@@ -40,8 +40,9 @@ def check_credentials():
 
             response = client_socket.recv(1024).decode('utf-8')
             if response.startswith("SUCCESS"):
-                subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/studentmain.py"])
                 login_window.destroy()
+                subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/studentmain.py"])
+
             else:
                 messagebox.showerror("Login Failed", response)
 

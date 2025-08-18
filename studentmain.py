@@ -6,7 +6,6 @@ import threading
 from lockedbrowser import launch_browser
 import time
 
-
 url = None  
 local_ip = None 
 
@@ -34,62 +33,64 @@ def log_offline():
             s.sendall(offline_message.encode("utf-8"))
             offline_response = s.recv(4096).decode("utf-8")
 
-            
             if offline_response.startswith("IP None"):
                 messagebox.showerror("Error", "The IP address could not be determined.")
             else:
-             messagebox.showinfo("Offline Status", offline_response)
+                messagebox.showinfo("Offline Status", offline_response)
     except Exception as e:
-        return f"Error: {e}"
+        messagebox.showerror("Error", f"Error: {e}")
 
 def create_tab():
+    global url
     if url:
         launch_browser(url)
     else:
         messagebox.showerror("Error", "No URL to launch.")
 
 def student_client(button_frame):
+    print("[CLIENT] Starting student client...")
+    global url, local_ip
+    print(f"[CLIENT] Starting server on IP: {local_ip} and port 6060")
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind((local_ip, 6060))
+    s.listen(1)
+    print("[CLIENT] Waiting for link...")
+    print(f"This is the local IP: {local_ip}")
+
+    while True:
+        conn, addr = s.accept()
+        print(f"[CLIENT] Connection from {addr}")
+        
+        try:
+            url_received = conn.recv(2048).decode("utf-8")
+            print(f"[CLIENT] Received URL: {url_received}")
+            if url_received:
+                student_window.after(0, lambda u=url_received: create_button(u))
+        except Exception as e:
+            print(f"[CLIENT] Error receiving data: {e}")
+        finally:
+            conn.close()
+
+def create_button(new_url):
     global url
-
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(("127.0.0.1", 6060))  
-
-        while True:
-            url_received = s.recv(2048).decode("utf-8")
-            print(f"[CLIENT] Message received: {url_received}")
-
-            if not url_received:
-                break  
-
-            url = url_received
-
-            def create_button():
-                authorised_link_button = tk.Button(
-                    button_frame,
-                    text="Open Link",
-                    command=create_tab,
-                    font=("Arial", 14),
-                    bg="green",
-                    fg="white",
-                    width=15
-                )
-                authorised_link_button.pack(pady=10)
-                messagebox.showinfo("Server Message", url)
-
-            button_frame.after(0, create_button)
-
-    except ConnectionRefusedError:
-        messagebox.showerror("Connection Error", "No server running at the given IP/port.")
-    except Exception as e:
-        messagebox.showerror("Error", f"An error occurred: {e}")
-    finally:
-        s.close()
-
+    url = new_url  
+    
+    authorised_link_button = tk.Button(
+        button_frame,
+        text="Open Link",
+        command=create_tab,
+        font=("Arial", 14),
+        bg="green",
+        fg="white",
+        width=15
+    )
+    authorised_link_button.pack(pady=10)
 
 def log_online(button_frame):
-    student_client(button_frame)
+    get_local_ip()
     global local_ip
+    threading.Thread(target=student_client, args=(button_frame,), daemon=True).start()
     try:
         server_ip = "127.0.0.1"
         server_port = 6060
@@ -107,12 +108,11 @@ def log_online(button_frame):
                 messagebox.showinfo("Online Status", online_response)
 
     except Exception as e:
-        return f"Error: {e}"
-
-  
+        messagebox.showerror("Error", f"Error: {e}")
 
 def student_menu():
     get_local_ip()
+    global student_window, button_frame
 
     student_window = tk.Tk()
     student_window.title("Student Menu")
@@ -150,7 +150,6 @@ def student_menu():
     button_frame = tk.Frame(student_window, bg="black")
     button_frame.pack(pady=50)
 
-
     log_online_button = tk.Button(
         button_frame,
         text="Establish Connection",
@@ -173,6 +172,16 @@ def student_menu():
     )
     log_offline_button.pack(pady=10)
 
+    delete_offline_button = tk.Button(
+        button_frame,
+        text="Link One",
+        command=log_offline,
+        font=("Arial", 16),
+        bg="blue",
+        fg="black",
+        width=20
+    )
+    delete_offline_button.pack(pady=10)
 
     student_window.mainloop()
 

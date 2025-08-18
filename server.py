@@ -150,7 +150,6 @@ def run_server():
                         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as send_sock:
                             send_sock.connect((target_ip, 6060))  
                             send_sock.sendall(saved_link.encode())
-                        client_socket.sendall(f"Link sent to {username}.".encode())
                         print(f"[+] Link sent to {username}")
                     except Exception as e:
                         client_socket.sendall(f"Failed to send link to {username}: {e}".encode())
