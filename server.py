@@ -86,6 +86,23 @@ def register_online(ip):
 
     conn.close()
 
+def register_offline(ip):
+    conn = sqlite3.connect("students.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM users WHERE ip = ?", (ip,))
+    user = cursor.fetchone()
+
+    if user:
+        cursor.execute("""
+    UPDATE users SET online_status = 0 WHERE ip = ?
+""", (ip,))
+        conn.commit()
+        print(f"[+] User with IP {ip} is now offline.")
+    else:
+        print(f"[!] No user found with IP {ip}.")
+
+
 def run_server():
     create_database()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -121,13 +138,13 @@ def run_server():
                 conn = sqlite3.connect("students.db")
                 cursor = conn.cursor()
 
-                cursor.execute("SELECT ip FROM users WHERE username = ?", (username,))
+                cursor.execute("SELECT ip FROM users WHERE username = ? AND online_status = 1", (username,))
                 result = cursor.fetchone()
                 conn.close()
 
                 if result:
                     target_ip = result[0]
-                    print(f"[+] Found user '{username}' with IP {target_ip}. Sending saved link...")
+                    print(f"[+] Found user '{username}' with IP {target_ip}, who is Online. Sending saved link...")
 
                     try:
                         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as send_sock:
@@ -144,6 +161,11 @@ def run_server():
             else:
                 client_socket.sendall("Invalid CONNECT command format.".encode())
                 print("[!] Invalid CONNECT command format")
+        
+        elif data.startswith("OFFLINE"):
+            ip = data.split(",")[1]
+            register_offline(ip)
+            client_socket.sendall(f"IP {ip} registered as offline.".encode())
 
         elif data == "SCAN_NETWORK":
             conn = sqlite3.connect("students.db")
@@ -162,7 +184,7 @@ def run_server():
 
                 client_socket.sendall(online_data.encode())
             else:
-                client_socket.sendall("No users are online.".encode())
+                client_socket.sendall("".encode())
 
         else:
             print(data)

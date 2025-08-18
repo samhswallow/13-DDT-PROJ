@@ -11,7 +11,9 @@ import subprocess
 import sys 
 
 def run_program():
-    subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/scan.py"])
+    import scan  
+    scan.gui()  
+    
 
 
 
