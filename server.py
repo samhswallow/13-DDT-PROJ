@@ -1,6 +1,7 @@
 import socket
 import sqlite3
 
+
 def create_database():
     conn = sqlite3.connect("students.db")
     cursor = conn.cursor()
@@ -88,7 +89,7 @@ def register_online(ip):
 def run_server():
     create_database()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("10.17.1.39", 6060))
+    s.bind(("127.0.0.1", 6060))
     s.listen(5)
     print("[*] Server is listening on 10.17.1.39:6060")
 
@@ -172,3 +173,9 @@ def run_server():
 
 if __name__ == "__main__":
     run_server()
+
+
+
+
+
+

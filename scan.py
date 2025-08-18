@@ -66,6 +66,7 @@ def open_input_window():
     save_button.pack(pady=10)
 
 def show_online_users():
+    get_online_users()
     users_response = get_online_users()
 
     if users_response.startswith("Error"):
@@ -75,14 +76,14 @@ def show_online_users():
 
     user_entries = [u.strip() for u in users_response.split("\n") if u.strip()]
 
-    online_window = tk.Toplevel()
-    online_window.title("Online Users")
-    online_window.geometry("600x600")
+    root = tk.Tk()
+    root.title("Scan Network - Online Users")
+    root.geometry("600x600")
 
-    label = tk.Label(online_window, text="Currently Online Users", font=("Arial", 16), fg="black")
+    label = tk.Label(root, text="Currently Online Users", font=("Arial", 16), fg="black")
     label.pack(pady=10)
 
-    list_frame = tk.Frame(online_window)
+    list_frame = tk.Frame(root)
     list_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
     if not user_entries:
@@ -112,7 +113,7 @@ def show_online_users():
             else:
                 print(f"[DEBUG] Malformed entry skipped: {entry}")
 
- 
+   
     send_link_button = tk.Button(
         list_frame,
         text="Send Link / Input",
@@ -123,18 +124,13 @@ def show_online_users():
     )
     send_link_button.pack(pady=20)
 
-    close_button = tk.Button(online_window, text="Close", command=online_window.destroy, font=("Arial", 12), fg="black")
+    close_button = tk.Button(root, text="Close", command=root.destroy, font=("Arial", 12), fg="black")
     close_button.pack(pady=10)
 
-def main_gui():
-    root = tk.Tk()
-    root.title("Scan Network - Online Users")
-    root.geometry("400x200")
-
-    scan_button = tk.Button(root, text="Scan Network", command=show_online_users, font=("Arial", 14), fg="black")
-    scan_button.pack(pady=40)
-
-    root.mainloop()
+    
 
 if __name__ == "__main__":
-    main_gui()
+    show_online_users()
+    tk.mainloop()
+
+

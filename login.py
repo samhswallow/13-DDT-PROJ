@@ -40,9 +40,8 @@ def check_credentials():
 
             response = client_socket.recv(1024).decode('utf-8')
             if response.startswith("SUCCESS"):
-                messagebox.showinfo("Login Success", response)
-                
                 subprocess.run([sys.executable, "/Users/samswallow/Desktop/13_ddt_proj/the files/studentmain.py"])
+                login_window.destroy()
             else:
                 messagebox.showerror("Login Failed", response)
 
@@ -53,6 +52,7 @@ def check_credentials():
 def login(): 
     global username_entry
     global password_entry
+    global login_window
 
     login_window = tk.Toplevel(root)
     login_window.title("Login Window")

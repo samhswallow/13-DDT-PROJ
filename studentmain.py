@@ -12,7 +12,7 @@ def get_local_ip():
     global local_ip
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("10.255.255.255", 1))
+        s.connect(("8.8.8.8", 1))
         local_ip = s.getsockname()[0]
         s.close()
         return local_ip
@@ -100,8 +100,16 @@ def student_client(button_frame):
         messagebox.showerror("Error", f"An error occurred: {e}")
 
 def log_online():
+ 
     response = send_ip()
-    messagebox.showinfo("Server Response", response)
+    
+    if response.startswith("IP None"):
+        messagebox.showerror("Error", "The IP address could not be determined.")
+    else:
+        messagebox.showinfo("Online Status", response)
+
+
+
 
 def student_menu():
      
@@ -142,16 +150,6 @@ def student_menu():
     button_frame = tk.Frame(student_window, bg="black")
     button_frame.pack(pady=50)
 
-    establish_connection_button = tk.Button(
-        button_frame,
-        text="Establish Connection",
-        command=lambda: student_client(button_frame),
-        font=("Arial", 16),
-        bg="blue",
-        fg="white",
-        width=20
-    )
-    establish_connection_button.pack(pady=10)
 
     log_online_button = tk.Button(
         button_frame,
@@ -159,7 +157,7 @@ def student_menu():
         command=log_online,
         font=("Arial", 16),
         bg="blue",
-        fg="white",
+        fg="black",
         width=20
     )
     log_online_button.pack(pady=10)
@@ -168,10 +166,10 @@ def student_menu():
             button_frame,
             text="Start Connection",
             command=start_server,
-            font=("Arial", 14),
-            bg="green",
+            font=("Arial", 16),
+            bg="blue",
             fg="black",
-            width=15
+            width=20
         )
     
     recieve_data_button.pack(pady=10)
@@ -180,3 +178,6 @@ def student_menu():
 
 if __name__ == "__main__":
     student_menu()
+
+
+
