@@ -106,7 +106,7 @@ def register_offline(ip):
 def run_server():
     create_database()
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("127.0.0.1", 6060))
+    s.bind(("0.0.0.0", 6060))
     s.listen(5)
     print("[*] Server is listening on 10.17.1.39:6060")
 
@@ -148,7 +148,7 @@ def run_server():
 
                     try:
                         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as send_sock:
-                            send_sock.connect((target_ip, 6060))  
+                            send_sock.connect((target_ip, 6061))  
                             send_sock.sendall(saved_link.encode())
                         print(f"[+] Link sent to {username}")
                     except Exception as e:

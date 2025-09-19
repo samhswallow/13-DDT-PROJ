@@ -9,6 +9,7 @@ import scan
 import os 
 import subprocess
 import sys 
+scan_window = None
 
 def run_program():
     import scan  
@@ -59,11 +60,26 @@ def begin_data():
     create_tab_label_entry.pack(pady=(0, 10))
     save_tab_button.pack(pady=10)
 
+def open_scan_register():
+    global scan_window
+
+    if scan_window and scan_window.winfo_exists():
+        scan_window.lift()
+        return
+
+    scan_window = scan.gui(root)
+
+    if  scan_window:
+        scan_window.protocol(
+            "WM_DELETE_WINDOW",
+            lambda: (scan_window.destroy(), globals().__setitem__("scan_window", None)),
+        )
+
 def teacher_client():
    
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(("127.0.0.1", 6060))  
+        s.connect(("10.17.1.40", 6060))  
        
     except ConnectionRefusedError:
         messagebox.showerror(
@@ -111,18 +127,11 @@ def teacher_menu():
 
     update_clock()  
 
-    connect_button = tk.Button(
-        main_window,
-        text="Start Connection",
-        command=begin_data,
-        font=("Arial", 16)
-    )
-    connect_button.pack(pady=10)
 
     scan_students_button = tk.Button(
         main_window,
         text="Scan for Students!",
-        command= run_program,
+        command= open_scan_register,
         font=("Arial", 16)
     )
     scan_students_button.pack(pady=10)

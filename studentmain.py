@@ -94,7 +94,7 @@ def log_online(button_frame):
     threading.Thread(target=student_client, args=(button_frame,), daemon=True).start()
     try:
         server_ip = "127.0.0.1"
-        server_port = 6060
+        server_port = 6061
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((server_ip, server_port))
 
@@ -173,16 +173,7 @@ def student_menu():
     )
     log_offline_button.pack(pady=10)
 
-    delete_offline_button = tk.Button(
-        button_frame,
-        text="Link One",
-        command=log_offline,
-        font=("Arial", 16),
-        bg="blue",
-        fg="black",
-        width=20
-    )
-    delete_offline_button.pack(pady=10)
+
 
     student_window.mainloop()
 
