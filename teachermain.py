@@ -1,27 +1,48 @@
-import tkinter as tk  # Main GUI library
-from tkinter import messagebox  # Popup dialogs
-from PIL import ImageTk, Image  # Handle images in Tkinter
-import socket  # Networking
-import threading  # Run tasks in background
-from tkinter import ttk  # Themed Tkinter widgets
-from datetime import datetime  # Date and time functions
-import os  # OS-level functions
-import subprocess  # Run external programs
-import sys  # System-level access
+"""This code is the simple teacher GUI which is acts as the home page for the 
+teacher. I had big plans to include more features on this GUI, however I had 
+to reduce my expectations given time. While this GUI is practically useless
+it can be used by future developers to upscale my program. """
 
-scan_window = None  # Track single scan window instance
+# OS-level functions
+import os  
 
+# Networking
+import socket 
 
-   
-current_url = None  
-current_name = None 
+# Run external programs
+import subprocess  
 
+# System-level access
+import sys 
+
+# Run tasks in background
+import threading  
+
+# Main GUI library
+import tkinter as tk  
+
+# Date and time functions
+from datetime import datetime  
+
+# Popup dialogs
+from tkinter import messagebox
+
+# Themed Tkinter widgets
+from tkinter import ttk  
+
+# Handle images in Tkinter
+from PIL import Image, ImageTk 
+
+scan_window = None 
+current_url = None
+current_name = None
 scan_process = None
 
 def open_scan_register():
+    """Open scan.py in a separate process if not already running."""
     global scan_process
 
-    # If scan.py is already running, just bring its window to front (cannot do easily across processes)
+    # If scan.py is already running, just notify user
     if scan_process and scan_process.poll() is None:
         messagebox.showinfo("Scan Window", "Scan window is already running!")
         return
@@ -29,68 +50,63 @@ def open_scan_register():
     # Launch scan.py as a separate Python process
     scan_process = subprocess.Popen([
         sys.executable,  # Path to current Python interpreter
-        "/Users/samswallow/Desktop/13_ddt_proj/the files/scan.py"  # Path to scan.py
+        "/Users/samswallow/Desktop/13_ddt_proj/the files/scan.py"
     ])
 
-    
 
-# Connect to main server justo before opening teacher menu.
-def teacher_client():  
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-        s.connect(("10.17.1.40", 6060))  
-    except ConnectionRefusedError:
-        messagebox.showerror(
-            "Connection Error",
-            "No server running on this IP and port.\nPlease start the server first."  
-        )
-    except Exception as e:
-        messagebox.showerror("Error", f"An error occurred: {e}")  # Other socket errors
+def gui():
+    """Main teacher menu GUI."""
+    teacher_window = tk.Tk()
+    teacher_window.title("Teacher Main Menu")
+    teacher_window.geometry("1600x1000")
+    teacher_window.configure(bg="black")
 
-# Main teacher menu GUI
-def gui():  
-    teahcer_window = tk.Tk()  
-    teahcer_window.title("Teacher Main Menu")  
-    teahcer_window.geometry("1600x1000")  
-    teahcer_window.configure(bg="black")  
-
-    header_frame = tk.Frame(teahcer_window, bg="#2c3e50", height=60) # Header frame
+    # Header frame
+    header_frame = tk.Frame(teacher_window, bg="#2c3e50", height=60)
     header_frame.pack(fill="x")
 
-    # Header labels with initial placeholder text
-    # Header labels with initial placeholder text
-    greeting_label = tk.Label(header_frame, text="Hello!", bg="#2c3e50", fg="white", font=("Arial", 30))
-    greeting_label.pack(side="left", padx=10)  # Pack to left
+    # Greeting label
+    greeting_label = tk.Label(
+        header_frame, text="Hello!", bg="#2c3e50",
+        fg="white", font=("Arial", 30)
+    )
+    greeting_label.pack(side="left", padx=10)
 
-    time_label = tk.Label(header_frame, text="00:00:00", bg="#2c3e50", fg="white", font=("Arial", 30))
-    time_label.pack(side="right", padx=10)  # Pack to right
+    # Time label
+    time_label = tk.Label(
+        header_frame, text="00:00:00", bg="#2c3e50",
+        fg="white", font=("Arial", 30)
+    )
+    time_label.pack(side="right", padx=10)
 
-    # Function to update greeting and time every second
-    def update_clock():  
-        now = datetime.now()  # Get current time
-        hour = now.hour  # Extract hour
-        greeting = "Good Morning" if 5 <= hour < 12 else "Good Afternoon" if 12 <= hour < 17 else "Good Evening"
-        greeting_label.config(text=greeting)  # Update greeting text
-        time_label.config(text=now.strftime("%H:%M:%S"))  # Update clock
-        teahcer_window.after(1000, update_clock)  # Repeat every second
+    def update_clock():
+        """Update greeting and time every second."""
+        now = datetime.now()
+        hour = now.hour
+        greeting = (
+            "Good Morning" if 5 <= hour < 12
+            else "Good Afternoon" if 12 <= hour < 17
+            else "Good Evening"
+        )
+        greeting_label.config(text=greeting)
+        time_label.config(text=now.strftime("%H:%M:%S"))
+        teacher_window.after(1000, update_clock)
 
+    update_clock()
 
-    update_clock()  # Start the clock and greeting updates
+    # Scan button
     scan_students_button = tk.Button(
-        teahcer_window,
-        text="Scan for Students!",  # Button text
-        command=open_scan_register,  # Trigger scan GUI
+        teacher_window,
+        text="Scan for Students!",
+        command=open_scan_register,
         font=("Arial", 16)
     )
-    scan_students_button.pack(pady=10)  
+    scan_students_button.pack(pady=10)
 
-    teahcer_window.mainloop()  
+    teacher_window.mainloop()
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     gui()
-    
-
-
 
 
 

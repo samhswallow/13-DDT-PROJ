@@ -1,14 +1,31 @@
-import socket # For networking
-import sqlite3 # For database
-from argon2 import PasswordHasher # For password hashing
+"""This code builds a SOCKET server running on a TCP protocol using a IPv4
+connection. I use a command dispatch system where I have stylised commands 
+that the student sends to the server. These commands request access to certain 
+types of data needed to run and process the software. The server also handels 
+login data and stores the passwords hashed. """ 
 
-ph = PasswordHasher() # Initialize Argon2 password hasher
 
-# This function handles the creation of my SQLite database.
-def create_database(): 
-    conn = sqlite3.connect("students.db") # Connect to (or create) the database file
-    cursor = conn.cursor() # Create a cursor object to execute SQL commands
-    cursor.execute(""" 
+# Networking
+import socket
+
+# Database
+import sqlite3
+
+# Password hashing
+from argon2 import PasswordHasher
+
+
+# Initialize Argon2 password hasher
+ph = PasswordHasher()
+
+
+def create_database():
+    """Create the SQLite database and users table if not exists."""
+    conn = sqlite3.connect("students.db")
+    cursor = conn.cursor()
+
+    # Create users table if it does not already exist
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE,
@@ -19,76 +36,93 @@ def create_database():
             ip TEXT UNIQUE,
             online_status INTEGER DEFAULT 0
         )
-    """) # Create users table if it doesn't exist
-    conn.commit() # Save changes
-    conn.close() # Close the connection
+    """)
 
-# This function saves registration data to the database, I also use Argon2 to hash passwords before storing them.
+    conn.commit()
+    conn.close()
+
+
 def save_to_database(data):
+    """Save registration data to the database, hashing passwords."""
     try:
-        username, name, surname, form_class, password, ip = data.split(",") # Unpack registration data
+        # Split comma-separated values into fields
+        username, name, surname, form_class, password, ip = data.split(",")
 
-        password = ph.hash(password)   # Hash the password using Argon2
+        # Hash the password with Argon2
+        password = ph.hash(password)
 
-        conn = sqlite3.connect("students.db")   # Connect to the database
-        cursor = conn.cursor() # Create cursor
+        conn = sqlite3.connect("students.db")
+        cursor = conn.cursor()
 
+        # Insert new user record (online_status set to 0 initially)
         cursor.execute("""
-            INSERT INTO users (username, name, surname, form_class, password, ip, online_status)
-            VALUES (?, ?, ?, ?, ?, ?, 0) 
-        """, (username, name, surname, form_class, password, ip)) # Insert user data with online_status = 0 (offline). This is so users can use the online/offline feature.
+            INSERT INTO users (
+                username, name, surname, form_class,
+                password, ip, online_status
+            )
+            VALUES (?, ?, ?, ?, ?, ?, 0)
+        """, (username, name, surname, form_class, password, ip))
 
         conn.commit()
         conn.close()
-        print(f"[+] Saved {username} to database with online_status = 0.")
-    except sqlite3.IntegrityError: # Eror if username or IP already exists
+        print(f"[+] Saved {username} with online_status = 0.")
+    except sqlite3.IntegrityError:
         print(f"[!] Username '{username}' or IP '{ip}' already exists.")
-    except Exception as e: # Error handling
-        print(f"[!] Error saving to database: {e}") 
+    except Exception as e:
+        print(f"[!] Error saving to database: {e}")
 
 
-# This function handles login requests, verifies passwords, and updates online status.
 def login_protocol(data):
-
+    """Handle login requests and update online status."""
     global login_value
-    login_value = False  # Default to False
+    login_value = False
+
+    # Expecting format: LOGIN,username,password
     parts = data.split(",")
     if len(parts) < 3:
         print("[!] Invalid LOGIN command format")
         return
 
-    username = parts[1] # Extract entered username and password
-    entered_password = parts[2] 
+    username = parts[1]
+    entered_password = parts[2]
 
     conn = sqlite3.connect("students.db")
     cursor = conn.cursor()
 
-    cursor.execute("SELECT password FROM users WHERE username = ?", (username,)) # Fetch stored hash for the username.
+    # Get stored password hash for user
+    cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
     result = cursor.fetchone()
 
-    if not result: # Error handeling
+    if not result:
         print("[!] User not found")
         conn.close()
         return
 
-    stored_hash = result[0] # Extract the stored hash
+    stored_hash = result[0]
 
     try:
-        if ph.verify(stored_hash, entered_password): # Argon verify to check if the password the user gave to the server matches the stored hash.
+        # Verify password
+        if ph.verify(stored_hash, entered_password):
             login_value = True
-            print(f"[+] Login successful for user: {username}") # Successful login
+            print(f"[+] Login successful: {username}")
 
-            cursor.execute("UPDATE users SET online_status = 1 WHERE username = ?", (username,)) # Set user as online on login
+            # Mark user as online
+            cursor.execute("""
+                UPDATE users
+                SET online_status = 1
+                WHERE username = ?
+            """, (username,))
             conn.commit()
-        else: # Error handling
+        else:
             print("[!] Incorrect password")
-    except: 
-        print("[!] Incorrect password or hash verification failed") 
+    except Exception:
+        print("[!] Password check failed")
 
     conn.close()
 
-# This function marks a user as online based on their IP address. Once the user sends a offline ping the user is marked as offline.
+
 def register_offline(ip):
+    """Mark a user as offline by IP address."""
     conn = sqlite3.connect("students.db")
     cursor = conn.cursor()
 
@@ -96,8 +130,11 @@ def register_offline(ip):
     user = cursor.fetchone()
 
     if user:
+        # Set online_status to 0
         cursor.execute("""
-            UPDATE users SET online_status = 0 WHERE ip = ?
+            UPDATE users
+            SET online_status = 0
+            WHERE ip = ?
         """, (ip,))
         conn.commit()
         print(f"[+] User with IP {ip} is now offline.")
@@ -106,125 +143,144 @@ def register_offline(ip):
 
     conn.close()
 
-# This is my central server. Its a core component of my program. Here I handle incoming reuqests from clients, process commands, and interact with the database.
+
 def run_server():
+    """Central server loop to handle client requests."""
     create_database()
+
+    # TCP socket server on port 6060 using IPV4
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("0.0.0.0", 6060))  # I bind to 0.0.0.0 to allow all users to connect my localhost. There are three kinds of IP connections. The Localhost, the Lan IP, and the Public IP. The Localhost is my own computer. The Lan IP is the wifi network. The Public IP can be connected to by anyone.    
-    s.listen(5)  # Listen for incoming connections
-    print("[*] Server is listening on 0.0.0.0:6060")
+    s.bind(("0.0.0.0", 6060))
+    s.listen(5)
+    print("[*] Server listening on 0.0.0.0:6060")
 
     while True:
         client_socket, addr = s.accept()
         print(f"[+] Connection from {addr}")
+
+        # Receive command from client
         data = client_socket.recv(2048).decode("utf-8").strip()
         print("[*] Received:", data)
 
-        if data.startswith("LOGIN"): # This is how my server speaks to my clients. Once they send over a LOGIN command. The server handles it seperatly. 
-            login_protocol(data)  # Runs the login protocol function given the data from the client.
+        # Handle commands
+        if data.startswith("LOGIN"):
+            login_protocol(data)
             if login_value:
-                client_socket.sendall("SUCCESS Login successful!".encode()) # If login is successful, send success message back to client.
+                client_socket.sendall("SUCCESS Login successful!".encode())
             else:
-                client_socket.sendall("Invalid username or password.".encode()) # If login fails, send failure message back to client.
+                client_socket.sendall("Invalid username or password.".encode())
 
-        elif data.startswith("CONNECT"): # This is how the teacher connects to a student. The teacher sends over a CONNECT command with the username and the saved link/input. The server then looks up the username in the database, checks if they are online, and if so, sends the saved link/input to the student's IP address on port 6061.
+        elif data.startswith("CONNECT"):
+            # CONNECT,<username>,<link>
             parts = data.split(",", 2)
-            if len(parts) == 3: # Here I break down the data in chunks. The first chunk is the command, the second chunk is the username, and the third chunk is the saved link/input.
-                command = parts[0]
-                username = parts[1].strip()
-                saved_link = parts[2].strip()
+            if len(parts) == 3:
+                _, username, saved_link = parts
+                username = username.strip()
+                saved_link = saved_link.strip()
 
-                conn = sqlite3.connect("students.db") # Connect to the database
+                conn = sqlite3.connect("students.db")
                 cursor = conn.cursor()
 
-                cursor.execute("SELECT ip FROM users WHERE username = ? AND online_status = 1", (username,)) # Check if the user is online before sending the link/input.
+                # Find target user IP if online
+                cursor.execute("""
+                    SELECT ip
+                    FROM users
+                    WHERE username = ?
+                      AND online_status = 1
+                """, (username,))
                 result = cursor.fetchone()
                 conn.close()
 
                 if result:
                     target_ip = result[0]
-                    print(f"[+] Found user '{username}' with IP {target_ip}, who is Online. Sending saved link...") # If the user is online, send the link/input to their IP address on port 6061.
+                    print(f"[+] Found '{username}' ({target_ip}) Online.")
 
                     try:
+                        # Send link to target user's client (port 6061)
                         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as send_sock:
-                            send_sock.connect((target_ip, 6061))  # Connect to the student's IP on port 6061
-                            send_sock.sendall(saved_link.encode()) # Send the saved link/input
-                        print(f"[+] Link sent to {username}") 
-                    except Exception as e: # Error handling
-                        client_socket.sendall(f"Failed to send link to {username}: {e}".encode()) 
-                        print(f"[!] Failed to send link to {username}: {e}") 
-                else: 
-                    client_socket.sendall(f"User '{username}' not found.".encode()) 
+                            send_sock.connect((target_ip, 6061))
+                            send_sock.sendall(saved_link.encode())
+                        print(f"[+] Link sent to {username}")
+                    except Exception as e:
+                        client_socket.sendall(f"Failed to send link: {e}".encode())
+                        print(f"[!] Failed to send link: {e}")
+                else:
+                    client_socket.sendall(f"User '{username}' not found.".encode())
                     print(f"[!] User '{username}' not found.")
             else:
                 client_socket.sendall("Invalid CONNECT command format.".encode())
                 print("[!] Invalid CONNECT command format")
 
         elif data.startswith("DELETE"):
+            # DELETE,<username>
             parts = data.split(",", 1)
-
-            command = parts[0]
             username = parts[1].strip()
 
-            conn = sqlite3.connect("students.db") # Connect to the database
+            conn = sqlite3.connect("students.db")
             cursor = conn.cursor()
 
-            cursor.execute("SELECT ip FROM users WHERE username = ? AND online_status = 1", (username,)) # Check if the user is online before sending the link/input.
+            # Get IP of target user if online
+            cursor.execute("""
+                SELECT ip
+                FROM users
+                WHERE username = ?
+                  AND online_status = 1
+            """, (username,))
             result = cursor.fetchone()
             conn.close()
 
             if result:
-                    target_ip = result[0]
-                    print(f"[+] Found user '{username}' with IP {target_ip}, who is Online. Deleting all links")
-                    
-                    try:
-                        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as send_sock:
-                            send_sock.connect((target_ip, 6061))  # Connect to the student's IP on port 6061
-                            send_sock.sendall("DELETE".encode()) # Send the saved link/input
+                target_ip = result[0]
+                print(f"[+] Deleting links for '{username}'.")
 
-                    except Exception as e: # Error handling
-                        client_socket.sendall(f"Failed to delete links for {username}: {e}".encode()) 
-                        print(f"[!] Failed to delete links for {username}: {e}") 
-            else: 
-                    client_socket.sendall(f"User '{username}' not found.".encode()) 
-                    print(f"[!] User '{username}' not found.")
+                try:
+                    # Tell client to delete links
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as send_sock:
+                        send_sock.connect((target_ip, 6061))
+                        send_sock.sendall("DELETE".encode())
+                except Exception as e:
+                    client_socket.sendall(f"Failed to delete links: {e}".encode())
+                    print(f"[!] Failed to delete links: {e}")
+            else:
+                client_socket.sendall(f"User '{username}' not found.".encode())
+                print(f"[!] User '{username}' not found.")
 
-        
-        elif data.startswith("OFFLINE"): # This is how the student marks themselves as offline. The student sends over an OFFLINE command with their IP address. The server then looks up the IP address in the database and marks the user as offline.
+        elif data.startswith("OFFLINE"):
+            # OFFLINE,<ip>
             ip = data.split(",")[1]
             register_offline(ip)
             client_socket.sendall(f"IP {ip} registered as offline.".encode())
 
-
-        elif data == "SCAN_NETWORK": # This is how the teacher scans for online students. The teacher sends over a SCAN_NETWORK command. The server then looks up all users in the database with online_status = 1 (online) and sends back their details to the teacher.
+        elif data == "SCAN_NETWORK":
+            # Return list of all online users
             conn = sqlite3.connect("students.db")
             cursor = conn.cursor()
 
-            cursor.execute("SELECT username, name, surname, form_class, ip FROM users WHERE online_status = 1")
+            cursor.execute("""
+                SELECT username, name, surname, form_class, ip
+                FROM users
+                WHERE online_status = 1
+            """)
             online_users = cursor.fetchall()
-
             conn.close()
 
-            if online_users: 
-                online_data = ""
-                for user in online_users:
-                    user_info = ",".join(user) # Converting to Tuple to a string because I cant send Tuples over a socket.
-                    online_data += user_info + "\n"
-
+            if online_users:
+                online_data = "\n".join(",".join(user) for user in online_users)
                 client_socket.sendall(online_data.encode())
             else:
                 client_socket.sendall("".encode())
 
         else:
-            print (data)
+            # Treat anything else as a registration attempt
+            print(data)
             save_to_database(data)
             client_socket.sendall("Registration successful!".encode())
-        
+
         client_socket.close()
 
-if __name__ == "__main__":
-    run_server()    
 
+if __name__ == "__main__":
+    run_server()
 
 
 
