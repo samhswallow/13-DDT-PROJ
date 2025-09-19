@@ -5,6 +5,7 @@ import socket
 import threading
 from lockedbrowser import launch_browser
 import time
+import multiprocessing
 
 url = None  
 local_ip = None 
@@ -43,7 +44,7 @@ def log_offline():
 def create_tab():
     global url
     if url:
-        launch_browser(url)
+        multiprocessing.Process(target=launch_browser, args=(url,), daemon=True).start()
     else:
         messagebox.showerror("Error", "No URL to launch.")
 
