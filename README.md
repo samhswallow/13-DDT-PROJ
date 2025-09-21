@@ -7,7 +7,7 @@ Kura Teach is a classroom management software that helps teachers control and mo
 ## Features
 
 - Internet Control: Restrict or allow internet usage for students during class.  
-- Google Calendar Integration: Students can view what classes they have next. Or how long they have left in class. 
+- Google Calendar Integration: Students can dynamically see there calander move throuhgout the day. 
 - User-Friendly GUI: Intuitive interface built with Tkinter for easy classroom management.  
 - Online Logging: Displays a list of students currently using the software.  
 - Password Hashing: All passwords are securely hashed for safety.
