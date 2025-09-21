@@ -16,10 +16,10 @@ Kura Teach is a classroom management software that helps teachers control and mo
 
 ## How to install
 
-1. Install Python
-2. Clone the GitHub repository:
-```bash
-git clone https://github.com/samhswallow/13-DDT-PROJ
+1. Install Python  
+2. Clone the GitHub repository:  
+   ```bash
+   git clone https://github.com/samhswallow/13-DDT-PROJ
 
 ---
 ## How to use (student)
