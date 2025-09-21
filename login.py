@@ -1,24 +1,34 @@
-"""This script handles the login system. I collec the user data before sending
-it to the server for processesing. Once the server sends back a result the 
-script denies or accept the login. """
+"""This script handles the login system backend: networking, IP retrieval,
+sending/receiving data from the server, and opening the registration window."""
 
 # Run external scripts
 import subprocess
+
 # System functions for running studentmain
 import sys
+
 # Networking
 import socket
-# GUI
-import tkinter as tk
+
 # Popups
 from tkinter import messagebox
-# Images in Tkinter
-from PIL import Image, ImageTk
+
 # Registration window module
 import register
 
+# Global placeholders for GUI elements (set by login_gui.py)
 register_window = None
 temp_ip = None
+login_window = None
+username_entry = None
+password_entry = None
+
+def on_close_register():
+    """Handle the register window being closed."""
+    global register_window
+    register_window.destroy()
+    register_window = None
+
 
 def get_local_ip():
     """Get the local IP address of the machine.
@@ -67,11 +77,12 @@ def check_credentials():
             # Login successful
             if response.startswith("SUCCESS"):
                 
-                login_window.after( 100, 
-                    subprocess.Popen( 
+                login_window.after(
+                    100,
+                    subprocess.Popen(
                         [
                             sys.executable,
-                            "/Users/samswallow/Desktop/13_ddt_proj/the files/studentmain.py",
+                            "/Users/samswallow/Desktop/13_ddt_proj/the files/student_gui.py",
                         ]
                     ),
                 )
@@ -90,102 +101,13 @@ def open_register():
     global register_window
 
     if register_window and register_window.winfo_exists():
-        register_window.lift()  # Bring it to front
+
+        # Bring it to front
+        register_window.lift()  
+
         return
 
     register_window = register.register_gui(login_window)
 
-    # Check if the registration window exists (is currently open)
-    register_window.protocol(
-        # Set a custom action for when the window's close button is clicked
-        "WM_DELETE_WINDOW", 
-        lambda: (
-            # Close the window and free its resources
-            register_window.destroy(), 
-             # Reset the global variable so Python knows the window is closed 
-            globals().__setitem__("register_window", None),
-        ),
-    )
-
-
-def gui():
-    """Handels the login GUI"""
-    global username_entry, password_entry, login_window
-
-    login_window = tk.Tk()
-    login_window.title("Login Window")
-    login_window.geometry("600x440")
-    login_window.configure(bg="#333333")
-
-    frame = tk.Frame(login_window, bg="#333333")
-
-    # Logo button
-    img = Image.open(
-        "/Users/samswallow/Desktop/13_ddt_proj/the files/38394572444-removebg-preview (1).png"
-    )
-    width = 300
-
-    # Best proportional relationship
-    aspect_ratio = img.height / img.width  
-
-     # Calculate height based on aspect ratio
-    height = int(width * aspect_ratio)  
-    
-    # Resize image to fit nicely in the window
-    img = img.resize((width, height))      
-
-    # Convert to PhotoImage for Tkinter
-    login_img = ImageTk.PhotoImage(img)    
-
-    login_label = tk.Label(frame, image=login_img, bg="#333333", borderwidth=0)
-
-    # Keep reference to avoid garbage collection
-    login_label.image = login_img  
-
-    # Username input
-    username_label = tk.Label(
-        frame, text="Username", bg="#333333", fg="#FFFFFF", font=("Arial", 16)
-    )
-    username_entry = tk.Entry(
-        frame, font=("Arial", 16), bg="white",
-        highlightbackground="black", highlightcolor="black"
-    )
-
-    # Password input
-    password_label = tk.Label(
-        frame, text="Password", bg="#333333", fg="#FFFFFF", font=("Arial", 16)
-    )
-    password_entry = tk.Entry(
-        frame, show="*", font=("Arial", 16), bg="white",
-        highlightbackground="black", highlightcolor="black"
-    )
-
-    # Buttons
-    login_button = tk.Button(
-        frame, text="Login", bg="#333333", fg="black",
-        font=("Arial", 16), command=check_credentials
-    )
-    register_button = tk.Button(
-        frame, text="Register", bg="#333333", fg="black",
-        font=("Arial", 16), command=open_register
-    )
-
-    # Layout
-    login_label.grid(row=0, column=0, columnspan=2, pady=(10, 20))
-    frame.grid_columnconfigure(0, weight=1)
-    frame.grid_columnconfigure(1, weight=1)
-    username_label.grid(row=1, column=0, sticky="e", padx=10)
-    username_entry.grid(row=1, column=1, sticky="w", pady=10, padx=10)
-    password_label.grid(row=2, column=0, sticky="e", padx=10)
-    password_entry.grid(row=2, column=1, sticky="w", pady=10, padx=10)
-    login_button.grid(row=3, column=0, columnspan=2, pady=(20, 10), ipadx=30)
-    register_button.grid(row=4, column=0, columnspan=2, pady=(0, 20), ipadx=20)
-
-    frame.pack(expand=True)
-
-if __name__ == "__main__":
-    gui()
-    login_window.mainloop()
-
-
-
+    # Custom close action that also closes register 
+    register_window.protocol("WM_DELETE_WINDOW", on_close_register)

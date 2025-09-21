@@ -43,7 +43,7 @@ def get_local_ip():
 
 
 def send_to_server():
-    """ Connets to the server IP and sends over register data 
+    """ Connets to the server IP and sends over register data.
     
     Tries to connect to the software's server to send over the register data. 
     Shows an error message if fails 
@@ -61,7 +61,10 @@ def send_to_server():
 
 
 def save_user_data():
-    """Compiles the user data before sending it to the server 
+    """Compiles the user data before sending it to the server.
+
+    Uses regular expression to check and compile formclass data in the correct
+    format.
     """
     global user_data
     username = username_entry.get()
@@ -79,13 +82,13 @@ def save_user_data():
         return
 
     if len(password) < 5:
-        messagebox.showerror("Error", "Minimum 5 characters.")
+        messagebox.showerror("Error", "Password must have a minimum 5 characters.")
         return
 
     if not re.match(r"^(09|10|11|12|13)[A-Za]{3}[HMBSRKU]$", formclass):
         messagebox.showerror(
         "Error",
-        "Format must be: 09–13, then 3 letters/numbers, ending with H/M/B/S/R/K/U."
+        "Form class format must be: 09–13, then 3 letters/numbers, ending with H/M/B/S/R/K/U."
     )
         return
     

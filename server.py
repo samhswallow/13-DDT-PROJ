@@ -145,7 +145,39 @@ def register_offline(ip):
 
 
 def run_server():
-    """Central server loop to handle client requests."""
+    """
+    Runs the central server. Uses TCP connections to handle client 
+    requests on a IPv4 connection. 
+
+    The server listens on port 6060 and accepts TCP connections. The server 
+    supports connections, requesting links, authetication , user info 
+    and registration. The user data is stored in the SQLite database, 
+    `students.db`.
+
+    Commands:
+        LOGIN,<username>,<password>:
+            Validates login credentials and returns success or failure.
+        CONNECT,<username>,<link>:
+            Sends a saved link to the target user if they are online.
+        DELETE,<username>:
+            Instructs the target user's client to delete its saved links.
+        OFFLINE,<ip>:
+            Marks the given IP address as offline in the database.
+        SCAN_NETWORK:
+            Returns a list of all currently online users with their details.
+        <other>:
+            Treated as a new user registration attempt and stored in the database.
+
+    Raises:
+        OSError: If the server socket fails to bind or accept connections.
+        sqlite3.Error: If there is a database access issue.
+        Exception: For unexpected errors when handling client requests.
+
+    Note:
+        This function runs an infinite loop and does not return. It should
+        be running in its own process behind other programs. 
+    """
+
     create_database()
 
     # TCP socket server on port 6060 using IPV4

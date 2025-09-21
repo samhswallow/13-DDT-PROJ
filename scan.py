@@ -61,7 +61,6 @@ def connect_to_user(username, ip):
             s.connect((server_ip, server_port))
             s.sendall(f"CONNECT,{username},{saved_link}".encode())
             response = s.recv(4096).decode("utf-8")
-            messagebox.showinfo("Server Response", response)
     except Exception as e:
         messagebox.showerror("Connection Error", str(e))
 
@@ -76,7 +75,6 @@ def delete_user_tabs(username, ip):
             s.connect((server_ip, server_port))
             s.sendall(f"DELETE,{username}".encode())
             response = s.recv(4096).decode("utf-8")
-            messagebox.showinfo("Server Response", response)
     except Exception as e:
         messagebox.showerror("Connection Error", str(e))
 
@@ -142,8 +140,34 @@ def save_input():
     input_window.destroy()
 
 
+def make_connect_command(username, ip):
+    """Return a function that connects to the given user."""
+    def command():
+        connect_to_user(username, ip)
+    return command
+
+
+def make_delete_command(username, ip):
+    """Return a function that deletes the given user's tabs."""
+    def command():
+        delete_user_tabs(username, ip)
+    return command
+
+
 def show_online_users():
-    """Fetch and display the list of online users in the scan window."""
+    """Fetches and displays the list of online users currently using the 
+    program. 
+    
+     Side Effects:
+        - Modifies the contents of the global `list_frame` widget.
+        - Creates Tkinter `Label`, `Button`, and `Frame` widgets for each
+          online user.
+        - Displays an error or "no users" message in the UI.
+
+    Raises:
+        RuntimeError: If the `list_frame` does not exist or has been closed.
+    """
+    
     global list_frame, canvas
     if not list_frame or not list_frame.winfo_exists():
         messagebox.showerror("Error", "Scan window has been closed.")
@@ -203,12 +227,12 @@ def show_online_users():
                 fg="#FFFFFF",
                 bg="#333333"
             ).pack(side="left", padx=10)
-
-            # Connect button
+            
+            # Widget sending link to student
             tk.Button(
                 row_frame,
                 text="Connect",
-                command=lambda u=username, i=ip: connect_to_user(u, i),
+                command=make_connect_command(username, ip),
                 font=("Arial", 12),
                 bg="#FF3399",
                 fg="black",
@@ -220,11 +244,11 @@ def show_online_users():
                 pady=5
             ).pack(side="right", padx=10)
 
-            # Delete Button
+            # Widget deleting link from student
             tk.Button(
                 row_frame,
                 text="Delete",
-                command=lambda u=username, i=ip: delete_user_tabs(u, i),
+                command=make_delete_command(username, ip),
                 font=("Arial", 12),
                 bg="#FF3399",
                 fg="black",
@@ -235,6 +259,7 @@ def show_online_users():
                 padx=15,
                 pady=5
             ).pack(side="right", padx=10)
+
 
 
 def gui():
@@ -270,11 +295,11 @@ def gui():
     middle_frame.pack(expand=True, fill="both", padx=10, pady=10)
 
     # Create a Canvas widget inside middle_frame.
-    # - Used to display and scroll other widgets/content.
+    # Used to display and scroll other widgets/content.
     canvas = tk.Canvas(middle_frame, bg="#333333", highlightthickness=0)
 
     # Create a vertical Scrollbar inside middle_frame.
-# - Linked to the canvas so users can scroll vertically.
+    # Linked to the canvas so users can scroll vertically.
     scrollbar = tk.Scrollbar(
         middle_frame,
         orient="vertical",
@@ -338,5 +363,6 @@ def gui():
 
 if __name__ == "__main__":
     scan_window = gui()
+    scan_window.update_idletasks()
     show_online_users()
     scan_window.mainloop()
