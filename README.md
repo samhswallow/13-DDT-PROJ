@@ -38,20 +38,17 @@ Kura Teach is a classroom management software that helps teachers control and mo
 ## Project structure
 
 project/
-│── __pycache__/
-│── 3839457244...png
-│── credentials.json
-│── token.json
-│── students.db
-│
-│── locked_browser.py
-│── login.py
-│── login_gui.py
-│── register.py
-│── scan.py
-│── server.py
-│── student_gui.py
-│── student_main.py
-│── teacher_main.py
-
-
+|-- pycache/
+|-- 3839457244...png
+|-- credentials.json
+|-- token.json
+|-- students.db
+|-- locked_browser.py
+|-- login.py
+|-- login_gui.py
+|-- register.py
+|-- scan.py
+|-- server.py
+|-- student_gui.py
+|-- student_main.py
+|-- teacher_main.py
