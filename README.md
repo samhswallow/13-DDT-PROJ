@@ -25,14 +25,16 @@ Kura Teach is a classroom management software that helps teachers control and mo
 ## How to use (student)
 
 1. Edit all IPs to match the IP of your server
-2. Start server.py
-2. Run login_gui.py
+2. Edit all images to match correct file path
+3. Start server.py
+4. Run login_gui.py
 
 ---
 ## How to use (teacher)
 
 1. Edit all IPs to match the IP of your server
-2. Run teacher_main.py
+2. Edit all images to match correct file path
+3. Run teacher_main.py
 
 ---
 ## Project structure
